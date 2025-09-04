@@ -1,0 +1,31 @@
+{
+  "name": "techstore",
+  "version": "1.0.0",
+  "description": "- **store**: e-commerce per clienti\n- **backoffice**: pannello amministrazione\n- **backend**: API Node/Express + MySQL",
+  "private": true,
+  "workspaces": [
+    "store",
+    "backoffice",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "echo \"Use: npm run dev -w <workspace>\" && exit 0",
+    "dev:store": "npm run dev -w store",
+    "dev:back": "npm run dev -w backoffice",
+    "dev:api": "npm run dev -w backend",
+    "build:store": "npm run build -w store",
+    "build:back": "npm run build -w backoffice"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brandijsen/techstore.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/brandijsen/techstore/issues"
+  },
+  "homepage": "https://github.com/brandijsen/techstore#readme"
+}
