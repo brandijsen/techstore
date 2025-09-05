@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 const pingRoutes = require('./routes/ping.routes');
+const demoRoutes = require('./routes/demo.routes');
 const { notFound, errorHandler } = require('./middleware/error');
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api', pingRoutes);
+app.use('/api', demoRoutes);
 
 // Health root
 app.get('/', (req, res) => {
