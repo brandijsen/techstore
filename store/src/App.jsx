@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Products from "./pages/Products.jsx";
+import './App.css';
 
 export default function App() {
   return (

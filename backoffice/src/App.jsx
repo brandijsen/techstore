@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Dashboard from "./pages/Dashboard.jsx";
 import Health from "./pages/Health.jsx";
+import './App.css';
 
 export default function App() {
   return (
