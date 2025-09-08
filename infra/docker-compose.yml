@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: techstore_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: techstore
+      MYSQL_USER: techstore_user
+      MYSQL_PASSWORD: techstore_pwd
+    ports:
+      - "3307:3306"    # usa 3307 esterno per evitare conflitti con 3306 locale
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro  # esegue gli .sql al primo avvio
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -prootpwd || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  mysql_data:
