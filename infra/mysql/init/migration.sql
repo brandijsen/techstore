@@ -1,70 +1,70 @@
--- Charset e collations moderne
-SET NAMES utf8mb4;
-SET time_zone = '+00:00';
-
--- ====== DATABASE (già creato via env, ma assicuriamo) ======
-CREATE DATABASE IF NOT EXISTS techstore CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE techstore;
 
--- ====== USERS ======
-CREATE TABLE IF NOT EXISTS users (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(190) NOT NULL UNIQUE,
+-- =========================
+-- CUSTOMERS (store)
+-- =========================
+CREATE TABLE customers (
+  id             INT AUTO_INCREMENT PRIMARY KEY,
+  name           VARCHAR(100) NOT NULL,
+  email          VARCHAR(190) NOT NULL UNIQUE,
+  password_hash  VARCHAR(255) NOT NULL,
+  phone          VARCHAR(30) NULL,
+  email_verified TINYINT(1) NOT NULL DEFAULT 0,
+  created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+   deleted_at DATETIME NULL,
+  INDEX idx_customers_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =========================
+-- STAFF (backoffice)
+-- - Garantisce 1 solo admin tramite admin_slot
+-- =========================
+CREATE TABLE staff (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  full_name     VARCHAR(120) NOT NULL,
+  email         VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  role ENUM('customer','admin') NOT NULL DEFAULT 'customer',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+  role          ENUM('admin','employee') NOT NULL DEFAULT 'employee',
+  admin_slot    TINYINT NULL,  -- 1 per l’admin unico, NULL per gli employee
+  is_active     TINYINT(1) NOT NULL DEFAULT 1,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
--- ====== CATEGORIES ======
-CREATE TABLE IF NOT EXISTS categories (
+  CONSTRAINT uq_staff_admin_slot UNIQUE (admin_slot),
+  CONSTRAINT chk_staff_admin_slot CHECK (
+    (role = 'admin'    AND admin_slot = 1) OR
+    (role = 'employee' AND admin_slot IS NULL)
+  ),
+
+  INDEX idx_staff_role (role),
+  INDEX idx_staff_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(120) NOT NULL UNIQUE,
-  slug VARCHAR(140) NOT NULL UNIQUE,
+  type ENUM(
+    'NEW_ORDER',
+    'PO_SENT',
+    'PO_CONFIRMED',
+    'PO_ARRIVED',
+    'LOW_STOCK',
+    'STAFF_CHANGE_REQUEST',
+    'STAFF_CHANGE_RESPONSE'
+  ) NOT NULL,
+  payload JSON NULL,              -- dati variabili in base al tipo di notifica
+  is_read TINYINT(1) NOT NULL DEFAULT 0,
+  user_id_target INT NULL,        -- chi deve ricevere la notifica (admin o employee)
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  CONSTRAINT fk_notif_user FOREIGN KEY (user_id_target)
+    REFERENCES staff(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ====== PRODUCTS ======
-CREATE TABLE IF NOT EXISTS products (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  category_id INT NOT NULL,
-  name VARCHAR(160) NOT NULL,
-  slug VARCHAR(180) NOT NULL UNIQUE,
-  sku VARCHAR(64) NOT NULL UNIQUE,
-  description TEXT NULL,
-  price DECIMAL(10,2) NOT NULL,
-  stock INT NOT NULL DEFAULT 0,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_products_category
-    FOREIGN KEY (category_id) REFERENCES categories(id)
-    ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB;
-
--- Indici utili
-CREATE INDEX idx_products_category ON products(category_id);
-CREATE INDEX idx_products_active ON products(is_active);
-
--- ====== SEED (facoltativo, utile per test) ======
-INSERT INTO categories (name, slug) VALUES
-  ('Laptops', 'laptops'),
-  ('Smartphones', 'smartphones')
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
-INSERT INTO products (category_id, name, slug, sku, description, price, stock)
-SELECT c.id, 'UltraBook 14', 'ultrabook-14', 'SKU-UB14', 'Laptop 14” leggero', 999.00, 10
-FROM categories c WHERE c.slug='laptops'
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
-INSERT INTO products (category_id, name, slug, sku, description, price, stock)
-SELECT c.id, 'Phone X', 'phone-x', 'SKU-PHONEX', 'Smartphone AMOLED', 699.00, 25
-FROM categories c WHERE c.slug='smartphones'
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
--- Admin demo (password fittizia hash da impostare in seguito)
-INSERT INTO users (name, email, password_hash, role)
-VALUES ('Admin', 'admin@techstore.local', '$2b$10$exampleExampleExampleExampleExamp', 'admin')
-ON DUPLICATE KEY UPDATE name=VALUES(name);
+-- Indici utili per query frequenti
+CREATE INDEX idx_notif_type ON notifications(type);
+CREATE INDEX idx_notif_user ON notifications(user_id_target);
+CREATE INDEX idx_notif_is_read ON notifications(is_read);
+CREATE INDEX idx_notif_created ON notifications(created_at);
+-- verifica
+SHOW TABLES;

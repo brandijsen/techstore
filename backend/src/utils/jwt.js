@@ -1,14 +1,41 @@
 const jwt = require('jsonwebtoken');
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'dev_access_secret';
-const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES || '15m';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
-function signAccessToken(payload) {
-  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: ACCESS_EXPIRES });
+/**
+ * Firma un nuovo token JWT
+ * @param {Object} payload - dati da inserire nel token (es. { sub: userId, kind: 'customer' })
+ * @param {String} expiresIn - opzionale, durata del token
+ * @returns {String} token JWT
+ */
+function signToken(payload, expiresIn = JWT_EXPIRES_IN) {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
-function verifyAccessToken(token) {
-  return jwt.verify(token, ACCESS_SECRET);
+/**
+ * Verifica un token JWT
+ * @param {String} token - token da verificare
+ * @returns {Object|null} payload decodificato o null se non valido
+ */
+function verifyToken(token) {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (err) {
+    return null;
+  }
 }
 
-module.exports = { signAccessToken, verifyAccessToken };
+/**
+ * Decodifica un token senza verificarne la firma
+ * ⚠️ utile solo per debug, non per autenticazione!
+ */
+function decodeToken(token) {
+  return jwt.decode(token);
+}
+
+module.exports = {
+  signToken,
+  verifyToken,
+  decodeToken,
+};

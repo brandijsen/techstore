@@ -6,10 +6,10 @@ const morgan = require('morgan');
 const hpp = require('hpp');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
-const authRoutes = require('./routes/auth.routes'); // lo creiamo tra poco
 const pingRoutes = require('./routes/ping.routes');
 const demoRoutes = require('./routes/demo.routes');
+const authRoutes = require('./routes/auth.routes');
+const staffRoutes = require('./routes/staff.routes');
 const { notFound, errorHandler } = require('./middlewares/error');
 
 const app = express();
@@ -24,18 +24,14 @@ app.use(compression());
 app.use(cookieParser());
 
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-});
-app.use('/api/auth', authLimiter);
+
 
 // Routes
 app.use('/api', pingRoutes);
 app.use('/api', demoRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes); // <-- aggiunta
+app.use('/api/staff', staffRoutes);
+
 
 
 // Health root

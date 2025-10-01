@@ -1,15 +1,27 @@
-const { Router } = require('express');
-const { register, login, logout, me, deleteMe } = require('../controllers/auth.controller');
-const { registerSchema, loginSchema, deleteAccountSchema, validate } = require('../validators/auth.schemas');
-const { requireAuth } = require('../middlewares/auth');
+const express = require('express');
+const router = express.Router();
+const { registerCustomer, loginCustomer, logoutCustomer, deleteCustomerAccount, loginStaff, logoutStaff } = require('../controllers/auth.controller');
+const authenticate = require('../middlewares/authenticate');
 
-const router = Router();
+// =======================
+// ROTTE AUTENTICAZIONE
+// =======================
 
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
-router.get('/me', requireAuth, me);
-router.post('/logout', logout);
-router.delete('/me', requireAuth, validate(deleteAccountSchema), deleteMe);
+// Customer
+router.post('/customer/login', loginCustomer);
+router.post('/customer/register', registerCustomer);7
+router.delete('/customer', authenticate, deleteCustomerAccount);
 
+router.post('/customer/logout', logoutCustomer);
+
+// Staff
+router.post('/staff/login', loginStaff);
+router.post('/staff/logout', logoutStaff);
+
+// TODO: aggiungeremo qui anche:
+// - /customer/register
+// - /customer/logout
+// - /staff/login
+// - ecc.
 
 module.exports = router;
