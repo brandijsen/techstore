@@ -66,5 +66,81 @@ CREATE INDEX idx_notif_type ON notifications(type);
 CREATE INDEX idx_notif_user ON notifications(user_id_target);
 CREATE INDEX idx_notif_is_read ON notifications(is_read);
 CREATE INDEX idx_notif_created ON notifications(created_at);
+
+-- =========================
+-- CATEGORIES
+-- =========================
+CREATE TABLE IF NOT EXISTS categories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL UNIQUE,
+  slug VARCHAR(140) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- =========================
+-- PRODUCTS
+-- =========================
+CREATE TABLE IF NOT EXISTS products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL UNIQUE,
+  description TEXT NULL,
+  category_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =========================
+-- PRODUCT VARIANTS
+-- =========================
+CREATE TABLE IF NOT EXISTS product_variants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  sku VARCHAR(50) NOT NULL UNIQUE,         -- codice univoco variante (es. "IPH14-BLK-128")
+  price DECIMAL(10,2) NOT NULL,            -- prezzo della variante
+  stock_qty INT NOT NULL DEFAULT 0,        -- quantità a magazzino
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =========================
+-- ATTRIBUTES (nuova)
+-- =========================
+CREATE TABLE IF NOT EXISTS attributes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,       -- es. 'Color', 'RAM', 'Storage'
+  category_id INT NULL,                    -- opzionale: lega attributi a una categoria
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- =========================
+-- VARIANT ATTRIBUTES (nuova)
+-- =========================
+CREATE TABLE IF NOT EXISTS variant_attributes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  variant_id INT NOT NULL,
+  attribute_id INT NOT NULL,
+  value VARCHAR(100) NOT NULL,
+  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
+  FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+-- =========================
+-- ATTRIBUTE_CATEGORY
+-- (Relazione molti-a-molti tra attributes e categories)
+-- =========================
+CREATE TABLE IF NOT EXISTS attribute_category (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  attribute_id INT NOT NULL,
+  category_id INT NOT NULL,
+  FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE CASCADE,
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+  UNIQUE KEY unique_attr_cat (attribute_id, category_id)
+) ENGINE=InnoDB;
+
 -- verifica
 SHOW TABLES;
