@@ -17,6 +17,8 @@ const variantRoutes = require("./routes/productVariant.routes");
 const variantAttrRoutes = require("./routes/variantAttribute.routes");
 const attrCategoryRoutes = require("./routes/attributeCategory.routes");
 const productFullRoutes = require("./routes/productFull.routes");
+const customerOrderRoutes = require("./routes/customerOrder.routes");
+const purchaseOrderRoutes = require("./routes/purchaseOrder.routes");
 
 const { notFound, errorHandler } = require('./middlewares/error');
 
@@ -48,6 +50,8 @@ app.use("/api/variant-attributes", variantAttrRoutes);
 app.use("/api/attribute-category", attrCategoryRoutes);
 app.use("/api/products", productFullRoutes);
 
+app.use("/api/orders", customerOrderRoutes);
+app.use("/api/purchase-orders", purchaseOrderRoutes);
 // Health root
 app.get('/', (req, res) => {
   res.json({ name: 'TechStore API', status: 'running' });

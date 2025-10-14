@@ -1,5 +1,6 @@
 const ProductVariant = require("../models/ProductVariant");
 
+// GET /product/:productId
 exports.getVariantsByProduct = async (req, res) => {
   try {
     const variants = await ProductVariant.findAllByProduct(req.params.productId);
@@ -10,6 +11,7 @@ exports.getVariantsByProduct = async (req, res) => {
   }
 };
 
+// GET /:id
 exports.getVariant = async (req, res) => {
   try {
     const variant = await ProductVariant.findById(req.params.id);
@@ -20,10 +22,14 @@ exports.getVariant = async (req, res) => {
   }
 };
 
+// POST /
 exports.createVariant = async (req, res) => {
   try {
-    const { product_id, sku, price, stock_qty } = req.body;
-    const newVariant = await ProductVariant.create(product_id, sku, price, stock_qty);
+    const { product_id, sku, price } = req.body;
+    if (!product_id || !sku || !price) {
+      return res.status(400).json({ error: "product_id, sku e price sono obbligatori" });
+    }
+    const newVariant = await ProductVariant.create(product_id, sku, price);
     res.status(201).json(newVariant);
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
@@ -33,16 +39,21 @@ exports.createVariant = async (req, res) => {
   }
 };
 
+// PUT /:id
 exports.updateVariant = async (req, res) => {
   try {
-    const { sku, price, stock_qty } = req.body;
-    const updated = await ProductVariant.update(req.params.id, sku, price, stock_qty);
+    const { sku, price } = req.body;
+    if (!sku || !price) {
+      return res.status(400).json({ error: "sku e price sono obbligatori" });
+    }
+    const updated = await ProductVariant.update(req.params.id, sku, price);
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// DELETE /:id
 exports.deleteVariant = async (req, res) => {
   try {
     const result = await ProductVariant.remove(req.params.id);
