@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const path = require("path");
+
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -9,6 +11,8 @@ const cookieParser = require('cookie-parser');
 const pingRoutes = require('./routes/ping.routes');
 const demoRoutes = require('./routes/demo.routes');
 const authRoutes = require('./routes/auth.routes');
+const customerAddressRoutes = require("./routes/customerAddress.routes");
+
 const staffRoutes = require('./routes/staff.routes');
 const categoryRoutes = require("./routes/category.routes");
 const productRoutes = require("./routes/product.routes");
@@ -23,6 +27,7 @@ const purchaseOrderRoutes = require("./routes/purchaseOrder.routes");
 const { notFound, errorHandler } = require('./middlewares/error');
 
 const app = express();
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Middlewares base
 app.use(helmet());
@@ -39,7 +44,9 @@ app.use(cookieParser());
 // Routes
 app.use('/api', pingRoutes);
 app.use('/api', demoRoutes);
-app.use('/api/auth', authRoutes); // <-- aggiunta
+app.use('/api/auth', authRoutes);
+app.use("/api/addresses", customerAddressRoutes);
+
 app.use('/api/staff', staffRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);

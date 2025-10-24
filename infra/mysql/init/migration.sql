@@ -16,6 +16,23 @@ CREATE TABLE customers (
   INDEX idx_customers_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+CREATE TABLE IF NOT EXISTS customer_addresses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  phone VARCHAR(30) NULL,
+  address_line VARCHAR(255) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  postal_code VARCHAR(20) NOT NULL,
+  province VARCHAR(100) NULL,
+  country VARCHAR(100) DEFAULT 'Italy',
+  is_default BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =========================
 -- STAFF (backoffice)
 -- - Garantisce 1 solo admin tramite admin_slot
@@ -86,6 +103,9 @@ CREATE TABLE IF NOT EXISTS products (
   name VARCHAR(150) NOT NULL UNIQUE,
   description TEXT NULL,
   category_id INT NOT NULL,
+    image_url VARCHAR(255) DEFAULT NULL,
+  brand VARCHAR(100) DEFAULT NULL,
+
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
@@ -99,7 +119,9 @@ CREATE TABLE IF NOT EXISTS product_variants (
   product_id INT NOT NULL,
   sku VARCHAR(50) NOT NULL UNIQUE,         -- codice univoco variante (es. "IPH14-BLK-128")
   price DECIMAL(10,2) NOT NULL,            -- prezzo della variante
-  stock_qty INT NOT NULL DEFAULT 0,        -- quantità a magazzino
+  stock_qty INT NOT NULL DEFAULT 0,
+    image_url VARCHAR(255) DEFAULT NULL,
+        -- quantità a magazzino
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE

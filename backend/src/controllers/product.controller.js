@@ -1,14 +1,29 @@
 const Product = require("../models/Product");
 
+
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
+    const { category, q } = req.query;
+    let products;
+
+    if (q) {
+      // 🔍 Ricerca per nome o brand (case-insensitive)
+      products = await Product.search(q);
+    } else if (category) {
+      // Filtra per categoria tramite slug
+      products = await Product.findByCategorySlug(category);
+    } else {
+      // Nessun filtro → tutti i prodotti
+      products = await Product.findAll();
+    }
+
     res.json(products);
   } catch (err) {
-    console.error("Errore in getProducts:", err);
-    res.status(500).json({ error: err.message });
+    console.error("Errore nel recupero prodotti:", err);
+    res.status(500).json({ error: "Errore nel recupero prodotti" });
   }
 };
+
 
 exports.getProduct = async (req, res) => {
   try {

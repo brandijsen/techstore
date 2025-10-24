@@ -18,14 +18,26 @@ const Product = {
   },
 
   // R - Read All (con join categorie)
-  findAll: async () => {
+findAll: async () => {
     const pool = await getPool();
-    const [rows] = await pool.execute(
-      `SELECT p.*, c.name AS category_name
-       FROM products p
-       JOIN categories c ON p.category_id = c.id
-       ORDER BY p.created_at DESC`
-    );
+    const [rows] = await pool.execute(`
+      SELECT p.*, c.name AS category_name, c.slug AS category_slug
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      ORDER BY p.created_at DESC
+    `);
+    return rows;
+  },
+
+  findByCategorySlug: async (slug) => {
+    const pool = await getPool();
+    const [rows] = await pool.execute(`
+      SELECT p.*, c.name AS category_name, c.slug AS category_slug
+      FROM products p
+      JOIN categories c ON p.category_id = c.id
+      WHERE c.slug = ?
+      ORDER BY p.created_at DESC
+    `, [slug]);
     return rows;
   },
 
@@ -41,6 +53,19 @@ const Product = {
     );
     return rows[0];
   },
+
+  search: async (query) => {
+  const pool = await getPool();
+  const like = `%${query}%`;
+  const [rows] = await pool.execute(`
+    SELECT p.*, c.name AS category_name, c.slug AS category_slug
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.name LIKE ? OR p.brand LIKE ?
+    ORDER BY p.created_at DESC
+  `, [like, like]);
+  return rows;
+},
 
   // U - Update
   update: async (id, name, brand, description, category_id) => {
